@@ -46,7 +46,7 @@ public class SecurityConfig {
     {
         http.csrf(csrf->csrf.disable());
         http.authorizeHttpRequests(request->request
-                .requestMatchers("register","login")
+                .requestMatchers("register","login","verify")
                 .permitAll()
                 .anyRequest().authenticated());  //here request means all request coming to the backend r
         http.httpBasic(Customizer.withDefaults());  //user login using alert msg

@@ -18,6 +18,16 @@ public class User
 
     private String password;
 
+    private String secretKey;
+
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
+    }
+
     public String getUsername() {
         return username;
     }

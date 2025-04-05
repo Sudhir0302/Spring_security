@@ -2,6 +2,7 @@ package com.sudhir003.spring_security.controller;
 
 import com.sudhir003.spring_security.model.User;
 import com.sudhir003.spring_security.service.JwtService;
+import com.sudhir003.spring_security.service.TwoFAService;
 import com.sudhir003.spring_security.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,14 +23,37 @@ public class UserController{
     private JwtService jwtService;
 
     @Autowired
+    private TwoFAService twoFAService;
+
+    @Autowired
     private AuthenticationManager authenticationManager;
 
     @PostMapping("register")
-    public User adduser(@RequestBody  User user)
+    public ResponseEntity<?> adduser(@RequestBody  User user)
     {
+        String qrurl=twoFAService.generateSecret(user);
         userService.saveUser(user);
-        return user;
+        return ResponseEntity.ok(qrurl);
     }
+
+    @PostMapping("/verify")
+    public ResponseEntity<?> verifyOtp(@RequestParam String username, @RequestParam int code) {
+        User user = userService.finduser(username);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+        boolean isCodeValid = twoFAService.verifyCode(user.getSecretKey(), code);
+
+        if (isCodeValid) {
+            String jwt = jwtService.generateToken(username);
+            return ResponseEntity.ok(jwt);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid OTP");
+        }
+    }
+
 
     @PostMapping("login")
     public String login(@RequestBody User user)
