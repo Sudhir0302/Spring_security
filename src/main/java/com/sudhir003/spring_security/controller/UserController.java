@@ -41,7 +41,7 @@ public class UserController{
         User user = userService.finduser(username);
 
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            return new ResponseEntity<>("User not found",HttpStatus.NOT_FOUND);
         }
 
         boolean isCodeValid = twoFAService.verifyCode(user.getSecretKey(), code);
@@ -50,21 +50,21 @@ public class UserController{
             String jwt = jwtService.generateToken(username);
             return ResponseEntity.ok(jwt);
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid OTP");
+            return new ResponseEntity<>("Invalid OTP",HttpStatus.UNAUTHORIZED);
         }
     }
 
 
     @PostMapping("login")
-    public String login(@RequestBody User user)
+    public ResponseEntity<?> login(@RequestBody User user)
     {
         //spring security has a in-build userpasswordauthenticationtoken ,which checks username and password and generate token.
         Authentication authentication=authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(),user.getPassword()));
         if(authentication.isAuthenticated()){
-            return  jwtService.generateToken(user.getUsername());
+            return ResponseEntity.ok("Password validated.Now enter OTP");
         }
-        return "failed";
+        return new ResponseEntity<>("failed",HttpStatus.UNAUTHORIZED);
     }
 
     @GetMapping("getuser")

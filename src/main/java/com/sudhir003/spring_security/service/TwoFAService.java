@@ -13,7 +13,7 @@ public class TwoFAService {
 
     public String generateSecret(User user) {
         GoogleAuthenticatorKey key = gAuth.createCredentials();
-        user.setSecretKey(key.getKey()); // Save to DB later
+        user.setSecretKey(key.getKey());
         return GoogleAuthenticatorQRGenerator.getOtpAuthURL("SpringApp", user.getUsername(), key);
     }
 
