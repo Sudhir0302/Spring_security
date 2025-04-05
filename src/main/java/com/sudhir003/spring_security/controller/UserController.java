@@ -28,7 +28,7 @@ public class UserController{
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    @PostMapping("register")
+    @PostMapping("/register")
     public ResponseEntity<?> adduser(@RequestBody  User user)
     {
         String qrurl=twoFAService.generateSecret(user);
@@ -44,7 +44,7 @@ public class UserController{
             return new ResponseEntity<>("User not found",HttpStatus.NOT_FOUND);
         }
 
-        boolean isCodeValid = twoFAService.verifyCode(user.getSecretKey(), code);
+        boolean isCodeValid = twoFAService.verifyCode(user.getSecretKey(), code); //checking if OTP and secretkey is same or not
 
         if (isCodeValid) {
             String jwt = jwtService.generateToken(username);
@@ -55,7 +55,7 @@ public class UserController{
     }
 
 
-    @PostMapping("login")
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user)
     {
         //spring security has a in-build userpasswordauthenticationtoken ,which checks username and password and generate token.
@@ -67,7 +67,7 @@ public class UserController{
         return new ResponseEntity<>("failed",HttpStatus.UNAUTHORIZED);
     }
 
-    @GetMapping("getuser")
+    @GetMapping("/getuser")
     public ResponseEntity<?> getuser(@RequestParam String username)
     {
         User user=userService.finduser(username);
