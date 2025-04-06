@@ -12,7 +12,7 @@
 	<artifactId>spring_security</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>spring_security</name>
-	<description>Demo project for Spring Boot</description>
+	<description>A Spring security project</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -105,8 +105,8 @@
 			<version>1.5.0</version>
 		</dependency>
 	</dependencies>
-
 	<build>
+		<finalName>2FA-AUTH</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -134,5 +134,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>
