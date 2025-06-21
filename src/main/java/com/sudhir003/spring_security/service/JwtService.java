@@ -44,11 +44,11 @@ public class JwtService
         try
         {
             KeyGenerator keygen=KeyGenerator.getInstance("HmacSHA256"); //SHA256 algo to generate secret key
-
             SecretKey secretKey=keygen.generateKey();
 
-            return Base64.getEncoder().encodeToString(secretKey.getEncoded());
-
+            String x=Base64.getEncoder().encodeToString(secretKey.getEncoded());
+            System.out.println("secret key :"+x);
+            return x;
         }
         catch (NoSuchAlgorithmException e)
         {

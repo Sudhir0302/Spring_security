@@ -52,6 +52,7 @@ public class SecurityConfig {
         http.httpBasic(Customizer.withDefaults());  //user login using alert msg
         http.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+//        http.authenticationProvider(authenticationProvider());
         return http.build();
     }
 

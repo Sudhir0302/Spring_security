@@ -46,7 +46,7 @@ public class JwtFilter extends OncePerRequestFilter
              if(jwtService.validateToken(token,userDetails)){
                  UsernamePasswordAuthenticationToken authToken=
                          new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
-                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request)); //set if you want request-specific metadata (like IP or session ID) to be available in the security context.
                  SecurityContextHolder.getContext().setAuthentication(authToken);
              }
         }

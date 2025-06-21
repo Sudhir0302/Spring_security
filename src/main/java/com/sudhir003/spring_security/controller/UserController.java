@@ -10,10 +10,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin("http://localhost:5173")
 public class UserController{
 
     @Autowired
@@ -31,6 +33,11 @@ public class UserController{
     @PostMapping("/register")
     public ResponseEntity<?> adduser(@RequestBody  User user)
     {
+        User user1=userService.finduser(user.getUsername());
+        System.out.println(user1);
+        if(user1!=null){
+            return new ResponseEntity<>("username already exits",HttpStatus.BAD_REQUEST);
+        }
         String qrurl=twoFAService.generateSecret(user);
         userService.saveUser(user);
         return ResponseEntity.ok(qrurl);
@@ -59,8 +66,10 @@ public class UserController{
     public ResponseEntity<?> login(@RequestBody User user)
     {
         //spring security has a in-build userpasswordauthenticationtoken ,which checks username and password and generate token.
+        //AuthenticationManager uses a list of AuthenticationProviders to validate credentials. One of the provider is dao.
         Authentication authentication=authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(),user.getPassword()));
+
         if(authentication.isAuthenticated()){
             return ResponseEntity.ok("Password validated.Now enter OTP");
         }
@@ -70,6 +79,11 @@ public class UserController{
     @GetMapping("/getuser")
     public ResponseEntity<?> getuser(@RequestParam String username)
     {
+        Authentication auth= SecurityContextHolder.getContext().getAuthentication();
+        System.out.println(auth.getName());
+        if(!auth.getName().equals(username)){
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
         User user=userService.finduser(username);
         if(user==null){
             return new ResponseEntity<>("user not found",HttpStatus.NOT_FOUND);
