@@ -19,8 +19,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
-
     @Autowired
     private MyUserDetailsService userDetailsService;
 
@@ -44,12 +42,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception
     {
-        http.csrf(csrf->csrf.disable());
+        http.csrf(csrf->csrf.disable());  //since this restapi is stateless,so there is no need to maintain session
         http.authorizeHttpRequests(request->request
                 .requestMatchers("register","login","verify")
                 .permitAll()
                 .anyRequest().authenticated());  //here request means all request coming to the backend r
-        http.httpBasic(Customizer.withDefaults());  //user login using alert msg
+//        http.httpBasic(Customizer.withDefaults());  //user login using alert msg
+        http.httpBasic().disable(); //disable default form login
+
+//      if you disable form login, the default /login endpoint is gone,
+//      and you need to implement your own login endpoint if you want one.
+        http.formLogin().disable();
         http.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 //        http.authenticationProvider(authenticationProvider());

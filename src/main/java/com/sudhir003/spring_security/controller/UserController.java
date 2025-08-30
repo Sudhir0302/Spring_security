@@ -70,6 +70,7 @@ public class UserController{
         Authentication authentication=authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(),user.getPassword()));
 
+        System.out.print(userService.getClass());
         if(authentication.isAuthenticated()){
             return ResponseEntity.ok("Password validated.Now enter OTP");
         }
