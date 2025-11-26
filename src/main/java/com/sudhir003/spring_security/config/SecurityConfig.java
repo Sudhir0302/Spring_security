@@ -44,7 +44,7 @@ public class SecurityConfig {
     {
         http.csrf(csrf->csrf.disable());  //since this restapi is stateless,so there is no need to maintain session
         http.authorizeHttpRequests(request->request
-                .requestMatchers("register","login","verify")
+                .requestMatchers("register","login","verify","v3/*","*")
                 .permitAll()
                 .anyRequest().authenticated());  //here request means all request coming to the backend r
 //        http.httpBasic(Customizer.withDefaults());  //user login using alert msg

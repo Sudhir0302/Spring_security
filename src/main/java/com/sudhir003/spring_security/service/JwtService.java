@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -22,16 +23,17 @@ import java.util.function.Function;
 public class JwtService
 {
 
+    @Value("${jwt_key}")
     private String secretKey;
 
-    public JwtService(){
-        this.secretKey=generateSecretkey();
-    }
+//    public JwtService(){
+//        this.secretKey=generateSecretkey();
+//    }
 
     public String generateToken(String username)
     {
         Map<String,Object> claims=new HashMap<>();
-
+        System.out.println(secretKey);
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(username)
@@ -40,21 +42,21 @@ public class JwtService
                 .signWith(getKey(), SignatureAlgorithm.HS256).compact();
     }
 
-    private String generateSecretkey() {
-        try
-        {
-            KeyGenerator keygen=KeyGenerator.getInstance("HmacSHA256"); //SHA256 algo to generate secret key
-            SecretKey secretKey=keygen.generateKey();
-
-            String x=Base64.getEncoder().encodeToString(secretKey.getEncoded());
-            System.out.println("secret key :"+x);
-            return x;
-        }
-        catch (NoSuchAlgorithmException e)
-        {
-            throw new RuntimeException("error getting secret key");
-        }
-    }
+//    private String generateSecretkey() {
+//        try
+//        {
+//            KeyGenerator keygen=KeyGenerator.getInstance("HmacSHA256"); //SHA256 algo to generate secret key
+//            SecretKey secretKey=keygen.generateKey();
+//
+//            String x=Base64.getEncoder().encodeToString(secretKey.getEncoded());
+//            System.out.println("secret key :"+x);
+//            return x;
+//        }
+//        catch (NoSuchAlgorithmException e)
+//        {
+//            throw new RuntimeException("error getting secret key");
+//        }
+//    }
 
 
     private Key getKey() {
