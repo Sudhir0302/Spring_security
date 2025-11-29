@@ -1,6 +1,7 @@
 package com.sudhir003.spring_security.controller;
 
 import com.sudhir003.spring_security.model.User;
+import com.sudhir003.spring_security.service.EmailService;
 import com.sudhir003.spring_security.service.JwtService;
 import com.sudhir003.spring_security.service.TwoFAService;
 import com.sudhir003.spring_security.service.UserService;
@@ -29,6 +30,9 @@ public class UserController{
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping("/register")
     public ResponseEntity<?> adduser(@RequestBody  User user)
@@ -90,6 +94,17 @@ public class UserController{
             return new ResponseEntity<>("user not found",HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @GetMapping("/sendmail")
+    public ResponseEntity<?> sendMail(@RequestParam String mailid){
+        try {
+            emailService.sendEmail(mailid, "test", "this mail service");
+        }catch (Exception e){
+            System.out.println(e);
+            return new ResponseEntity<>("mail not send!!",HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>("mail send!!",HttpStatus.OK);
     }
 
 }
