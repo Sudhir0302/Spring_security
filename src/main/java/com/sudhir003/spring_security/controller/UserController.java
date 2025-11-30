@@ -42,9 +42,10 @@ public class UserController{
         if(user1!=null){
             return new ResponseEntity<>("username already exits",HttpStatus.BAD_REQUEST);
         }
-        String qrurl=twoFAService.generateSecret(user);
+//        String qrurl=twoFAService.generateSecret(user);
+        user.setIs2FA(false);
         userService.saveUser(user);
-        return ResponseEntity.ok(qrurl);
+        return ResponseEntity.ok(HttpStatus.CREATED);
     }
 
     @PostMapping("/verify")
@@ -74,9 +75,13 @@ public class UserController{
         Authentication authentication=authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(),user.getPassword()));
 
-        System.out.print(userService.getClass());
-        if(authentication.isAuthenticated()){
-            return ResponseEntity.ok("Password validated.Now enter OTP");
+//        System.out.print(userService.getClass());
+        User user1=userService.finduser(user.getUsername());
+
+        if(authentication.isAuthenticated()&&user1.getIs2FA()){
+            return new ResponseEntity<>("Password validated.Now enter TOTP ",HttpStatus.OK);
+        }else if(authentication.isAuthenticated()){
+            return new ResponseEntity<>(jwtService.generateToken(user1.getUsername()),HttpStatus.OK);
         }
         return new ResponseEntity<>("failed",HttpStatus.UNAUTHORIZED);
     }
@@ -96,6 +101,7 @@ public class UserController{
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
+//    testing endpoint
     @GetMapping("/sendmail")
     public ResponseEntity<?> sendMail(@RequestParam String mailid){
         try {
@@ -106,5 +112,30 @@ public class UserController{
         }
         return new ResponseEntity<>("mail send!!",HttpStatus.OK);
     }
+
+    @GetMapping("/enable2FA")
+    public ResponseEntity<?> enable2FA(@RequestParam String username)
+    {
+        User user=userService.finduser(username);
+        user.setIs2FA(true);
+        String QRurl=twoFAService.generateSecret(user);
+        userService.updateUser(user);
+        return new ResponseEntity<>(QRurl,HttpStatus.CREATED);
+    }
+
+    @GetMapping("/disable2FA")
+    public ResponseEntity<?> disable2FA(@RequestParam String username)
+    {
+        User user=userService.finduser(username);
+        user.setIs2FA(false);
+        user.setSecretKey(null);
+        userService.updateUser(user);
+        return new ResponseEntity<>("disabled 2fa",HttpStatus.OK);
+    }
+
+
+//    public ResponseEntity<?>recover2FA(@RequestParam String username){
+//
+//    }
 
 }

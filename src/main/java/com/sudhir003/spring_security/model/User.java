@@ -20,6 +20,16 @@ public class User
 
     private String secretKey;
 
+    private Boolean is2FA;
+
+    public Boolean getIs2FA() {
+        return is2FA;
+    }
+
+    public void setIs2FA(Boolean is2FA) {
+        this.is2FA = is2FA;
+    }
+
     public String getSecretKey() {
         return secretKey;
     }
