@@ -6,6 +6,7 @@ import com.sudhir003.spring_security.service.JwtService;
 import com.sudhir003.spring_security.service.TwoFAService;
 import com.sudhir003.spring_security.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,6 +15,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.SecureRandom;
+import java.time.Duration;
+import java.util.Timer;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @CrossOrigin("http://localhost:5173")
@@ -33,6 +39,10 @@ public class UserController{
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+//    private static ConcurrentHashMap<String,Integer>store_otp=new ConcurrentHashMap<>();
 
     @PostMapping("/register")
     public ResponseEntity<?> adduser(@RequestBody  User user)
@@ -134,8 +144,39 @@ public class UserController{
     }
 
 
-//    public ResponseEntity<?>recover2FA(@RequestParam String username){
-//
-//    }
+    @GetMapping("/recoverAccount")
+    public ResponseEntity<?>recover2FA(@RequestParam String username){
+        User user=userService.finduser(username);
+        if(user!=null){
+            SecureRandom random = new SecureRandom();
+            int otp=100000 + random.nextInt(900000);
+            try {
+//                store_otp.put(username,otp);
+                redisTemplate.opsForValue().set(username,otp, Duration.ofMinutes(1));
+                emailService.sendEmail(username, "OTP for account/2fa recovery", String.valueOf(otp));
+                return new ResponseEntity<>("otp send via email",HttpStatus.OK);
+            }catch (Exception e){
+//                System.out.println(e);
+                return new ResponseEntity<>(e.getMessage(),HttpStatus.UNAUTHORIZED);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    @GetMapping("/verifyotp")
+    public ResponseEntity<?>verifyOTP(@RequestParam String username,@RequestParam int otp)
+    {
+        Object obj=redisTemplate.opsForValue().get(username);
+        int stored_otp=Integer.parseInt(obj.toString()!=null? String.valueOf(0) :obj.toString());
+        if(stored_otp==otp){
+            User user=userService.finduser(username);
+            user.setSecretKey(null);
+            String QRurl=twoFAService.generateSecret(user);
+            userService.updateUser(user);
+            return new ResponseEntity<>(QRurl,HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>("invalid otp",HttpStatus.BAD_REQUEST);
+        }
+    }
 
 }
