@@ -41,7 +41,7 @@ public class UserController{
     private EmailService emailService;
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
 //    private static ConcurrentHashMap<String,Integer>store_otp=new ConcurrentHashMap<>();
 
     @PostMapping("/register")
@@ -152,7 +152,7 @@ public class UserController{
             int otp=100000 + random.nextInt(900000);
             try {
 //                store_otp.put(username,otp);
-                redisTemplate.opsForValue().set(username,otp, Duration.ofMinutes(1));
+                redisTemplate.opsForValue().set(username, String.valueOf(otp), Duration.ofMinutes(5));
                 emailService.sendEmail(username, "OTP for account/2fa recovery", String.valueOf(otp));
                 return new ResponseEntity<>("otp send via email",HttpStatus.OK);
             }catch (Exception e){
@@ -166,17 +166,21 @@ public class UserController{
     @GetMapping("/verifyotp")
     public ResponseEntity<?>verifyOTP(@RequestParam String username,@RequestParam int otp)
     {
-        Object obj=redisTemplate.opsForValue().get(username);
-        int stored_otp=Integer.parseInt(obj.toString()!=null? String.valueOf(0) :obj.toString());
-        if(stored_otp==otp){
-            User user=userService.finduser(username);
-            user.setSecretKey(null);
-            String QRurl=twoFAService.generateSecret(user);
-            userService.updateUser(user);
-            return new ResponseEntity<>(QRurl,HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>("invalid otp",HttpStatus.BAD_REQUEST);
+        Object obj = redisTemplate.opsForValue().get(username);
+
+        if (obj == null) {
+            return new ResponseEntity<>("OTP expired or not found", HttpStatus.BAD_REQUEST);
         }
+        int storedOtp = Integer.parseInt(obj.toString());
+        if (storedOtp == otp) {
+            User user = userService.finduser(username);
+            user.setSecretKey(null);
+            String QRurl = twoFAService.generateSecret(user);
+            userService.updateUser(user);
+            return new ResponseEntity<>(QRurl, HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>("Invalid OTP", HttpStatus.BAD_REQUEST);
     }
 
 }
